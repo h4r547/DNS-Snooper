@@ -1,4 +1,4 @@
-from scapy.layers.dot11 import *
+from scapy.all import *
 import os
 
 
@@ -60,10 +60,17 @@ def list_all(pkt):
             elif 'UDP' in pkt and 'IP' in pkt and pkt[4]['UDP'].dport == 53:
                 print "DNS"
                 print str(pkt[4][IP].src)+" > "+str(pkt[4][IP].dst)
-                print hexdump(pkt[4]['UDP']['Raw'].load)
-                wrpcap('dns.pcap', pkt, append=True)
-        except:
-            print "error"
+                wrpcap('dns.pcap', pkt)
+                print "Query: "+get_queries()
+        except Exception as e:
+            print e
+
+
+def get_queries():
+    packets = rdpcap('dns.pcap')
+    for p in packets:
+        if p.haslayer(DNS):
+            return p[DNS].qd.qname
 
 
 interface = get_iface()
